@@ -26,7 +26,7 @@ class Defect:
     title: str
     description: str = ""
     status: str = "Open"
-    severity: str = "Medium"
+    severity: str = "Major"
     createdAt: str = field(default_factory=_now_iso)
     updatedAt: str = field(default_factory=_now_iso)
 
