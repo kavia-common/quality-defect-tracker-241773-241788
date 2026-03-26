@@ -10,14 +10,22 @@ from .routes.health import blp as health_blp
 app = Flask(__name__)
 app.url_map.strict_slashes = False
 
-# CORS configuration (demo-safe):
-# - Default allow React dev server at http://localhost:3000
-# - Allow override via FRONTEND_URL env var (or REACT_APP_FRONTEND_URL if used)
-frontend_url = os.environ.get("FRONTEND_URL") or os.environ.get("REACT_APP_FRONTEND_URL") or "http://localhost:3000"
+# CORS configuration:
+# The user request requires "Enable CORS for all origins" so the React frontend can
+# reach the Flask backend in cloud/preview environments without origin mismatch.
+#
+# If you want to lock this down later, set CORS_ORIGINS to a comma-separated list
+# of allowed origins (e.g. https://my-frontend.example.com).
+cors_origins_env = os.environ.get("CORS_ORIGINS", "*").strip()
+cors_origins = "*" if cors_origins_env == "*" else [o.strip() for o in cors_origins_env.split(",") if o.strip()]
+
 CORS(
     app,
-    resources={r"/*": {"origins": [frontend_url]}},
+    resources={r"/*": {"origins": cors_origins}},
     supports_credentials=False,
+    methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allow_headers=["Content-Type", "Authorization"],
+    max_age=86400,
 )
 
 app.config["API_TITLE"] = "My Flask API"
