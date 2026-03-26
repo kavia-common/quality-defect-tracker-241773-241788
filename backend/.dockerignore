@@ -1,0 +1,33 @@
+# Backend Docker build exclusions
+# Prevents large/irrelevant files from being sent to the Docker daemon, which can
+# cause very slow or apparently "hung" builds.
+
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+
+# Local virtualenv (present in this repo)
+venv/
+.venv/
+
+# Test caches
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Git / editor
+.git/
+.vscode/
+.idea/
+
+# Env files
+.env
+
+# Misc
+*.log
+*.tmp
+*.bak
+.DS_Store
+Thumbs.db
