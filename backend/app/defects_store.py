@@ -7,7 +7,7 @@ reset when the Flask process restarts.
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field, asdict
+from dataclasses import asdict, dataclass, field
 from datetime import datetime, timezone
 from typing import Dict, List, Optional
 from uuid import uuid4
@@ -16,6 +16,11 @@ from uuid import uuid4
 def _now_iso() -> str:
     """Return current UTC time as an ISO-8601 string."""
     return datetime.now(timezone.utc).isoformat()
+
+
+def _iso_utc(year: int, month: int, day: int, hour: int = 12, minute: int = 0, second: int = 0) -> str:
+    """Return a stable ISO-8601 UTC timestamp for sample data."""
+    return datetime(year, month, day, hour, minute, second, tzinfo=timezone.utc).isoformat()
 
 
 @dataclass
@@ -60,7 +65,8 @@ class DefectsStore:
             title=str(payload.get("title") or "").strip() or "Untitled defect",
             description=str(payload.get("description") or ""),
             status=str(payload.get("status") or "Open"),
-            severity=str(payload.get("severity") or "Medium"),
+            # Frontend/user instruction uses Critical/Major/Minor; keep backend permissive.
+            severity=str(payload.get("severity") or "Major"),
             createdAt=str(payload.get("createdAt") or now),
             updatedAt=str(payload.get("updatedAt") or now),
         )
@@ -93,3 +99,62 @@ class DefectsStore:
 
 # Singleton store instance for the demo app.
 STORE = DefectsStore()
+
+
+# PUBLIC_INTERFACE
+def seed_sample_defects(store: DefectsStore = STORE) -> None:
+    """
+    Seed the in-memory store with sample defects.
+
+    This is intended for hackathon/demo usage so the frontend shows data
+    immediately after refresh.
+
+    Seeding is idempotent: if the store already has any items, this function
+    does nothing.
+
+    Args:
+        store: The DefectsStore instance to seed (defaults to the global STORE).
+
+    Returns:
+        None
+    """
+    if store.list():
+        return
+
+    # 3–5 sample defects per user request (using 5 for a richer dashboard).
+    samples = [
+        {
+            "title": "Login form allows blank password submission",
+            "severity": "Critical",
+            "status": "Open",
+            "createdAt": _iso_utc(2026, 3, 10, 9, 15, 0),
+        },
+        {
+            "title": "Dashboard status chart miscounts 'In Progress' items",
+            "severity": "Major",
+            "status": "In Progress",
+            "createdAt": _iso_utc(2026, 3, 12, 14, 30, 0),
+        },
+        {
+            "title": "Mobile table layout overflows on small screens",
+            "severity": "Major",
+            "status": "Open",
+            "createdAt": _iso_utc(2026, 3, 14, 11, 0, 0),
+        },
+        {
+            "title": "Export CSV includes internal IDs column unexpectedly",
+            "severity": "Minor",
+            "status": "Complete",
+            "createdAt": _iso_utc(2026, 3, 16, 16, 45, 0),
+        },
+        {
+            "title": "Corrective action notes not persisted after refresh",
+            "severity": "Critical",
+            "status": "In Progress",
+            "createdAt": _iso_utc(2026, 3, 18, 10, 5, 0),
+        },
+    ]
+
+    for s in samples:
+        # Keep updatedAt aligned to createdAt for sample data.
+        store.create({**s, "updatedAt": s["createdAt"]})

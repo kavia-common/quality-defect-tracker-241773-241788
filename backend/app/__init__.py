@@ -4,11 +4,16 @@ from flask import Flask
 from flask_cors import CORS
 from flask_smorest import Api
 
+from .defects_store import seed_sample_defects
 from .routes.defects import blp as defects_blp
 from .routes.health import blp as health_blp
 
 app = Flask(__name__)
 app.url_map.strict_slashes = False
+
+# Seed demo data as early as possible so the frontend dashboard immediately shows
+# defects after refresh.
+seed_sample_defects()
 
 # CORS configuration:
 # The user request requires "Enable CORS for all origins" so the React frontend can
