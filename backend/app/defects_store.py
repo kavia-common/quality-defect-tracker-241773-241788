@@ -118,10 +118,12 @@ def seed_sample_defects(store: DefectsStore = STORE) -> None:
     Returns:
         None
     """
+    # Only seed when the in-memory store is empty.
     if store.list():
         return
 
-    # 3–5 sample defects per user request (using 5 for a richer dashboard).
+    # Exactly 3 sample defects per user request.
+    # Ensure we cover: severity Critical/Major/Minor and status Open/In Progress/Complete.
     samples = [
         {
             "title": "Login form allows blank password submission",
@@ -136,22 +138,10 @@ def seed_sample_defects(store: DefectsStore = STORE) -> None:
             "createdAt": _iso_utc(2026, 3, 12, 14, 30, 0),
         },
         {
-            "title": "Mobile table layout overflows on small screens",
-            "severity": "Major",
-            "status": "Open",
-            "createdAt": _iso_utc(2026, 3, 14, 11, 0, 0),
-        },
-        {
             "title": "Export CSV includes internal IDs column unexpectedly",
             "severity": "Minor",
             "status": "Complete",
             "createdAt": _iso_utc(2026, 3, 16, 16, 45, 0),
-        },
-        {
-            "title": "Corrective action notes not persisted after refresh",
-            "severity": "Critical",
-            "status": "In Progress",
-            "createdAt": _iso_utc(2026, 3, 18, 10, 5, 0),
         },
     ]
 
